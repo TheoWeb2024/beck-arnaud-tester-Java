@@ -46,6 +46,5 @@ public class FareCalculatorService {
         }	
         	
         }
-        //ticket.setPrice((double) round(ticket.getPrice() * 1000) / 1000); // arrondi à 3 décimales
     }
 }
