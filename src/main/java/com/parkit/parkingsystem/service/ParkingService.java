@@ -1,114 +1,130 @@
-package com.parkit.parkingsystem.dao;
+package com.parkit.parkingsystem.service;
 
-import com.parkit.parkingsystem.config.DataBaseConfig;
-import com.parkit.parkingsystem.constants.DBConstants;
 import com.parkit.parkingsystem.constants.ParkingType;
+import com.parkit.parkingsystem.dao.ParkingSpotDAO;
+import com.parkit.parkingsystem.dao.TicketDAO;
 import com.parkit.parkingsystem.model.ParkingSpot;
 import com.parkit.parkingsystem.model.Ticket;
+import com.parkit.parkingsystem.util.InputReaderUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
+import java.util.Date;
 
-public class TicketDAO {
+public class ParkingService {
 
-    private static final Logger logger = LogManager.getLogger("TicketDAO");
+    private static final Logger logger = LogManager.getLogger("ParkingService");
 
-    public DataBaseConfig dataBaseConfig = new DataBaseConfig();
+    private static FareCalculatorService fareCalculatorService = new FareCalculatorService();
 
-    public boolean saveTicket(Ticket ticket){
-        Connection con = null;
-        try { 
-            con = dataBaseConfig.getConnection(); 
-            PreparedStatement ps = con.prepareStatement(DBConstants.SAVE_TICKET);
-            //ID, PARKING_NUMBER, VEHICLE_REG_NUMBER, PRICE, IN_TIME, OUT_TIME)
-           // ps.setInt(1,ticket.getId());
-            ps.setInt(1,ticket.getParkingSpot().getId());
-            ps.setString(2, ticket.getVehicleRegNumber());
-            ps.setDouble(3, ticket.getPrice());
-            ps.setTimestamp(4, new Timestamp(ticket.getInTime().getTime())); 
-            ps.setTimestamp(5, (ticket.getOutTime() == null)?null: (new Timestamp(ticket.getOutTime().getTime())) );
-            return ps.execute();
-        }catch (Exception ex){ 
-            logger.error("Error fetching next available slot",ex);
-        }finally { 
-            dataBaseConfig.closeConnection(con);
-            return false;
-        }
+    private InputReaderUtil inputReaderUtil;
+    private ParkingSpotDAO parkingSpotDAO;
+    private  TicketDAO ticketDAO;
+
+    public ParkingService(InputReaderUtil inputReaderUtil, ParkingSpotDAO parkingSpotDAO, TicketDAO ticketDAO){
+        this.inputReaderUtil = inputReaderUtil; 
+        this.parkingSpotDAO = parkingSpotDAO; 
+        this.ticketDAO = ticketDAO;
     }
+ 
+    public void processIncomingVehicle() {
+        try{
+            ParkingSpot parkingSpot = getNextParkingNumberIfAvailable();
+            if(parkingSpot !=null && parkingSpot.getId() > 0){
+                String vehicleRegNumber = getVehicleRegNumber();  //changeToVEHICLE
+                parkingSpot.setAvailable(false);
+                parkingSpotDAO.updateParking(parkingSpot);//allot this parking space and mark it's availability as false
 
-    public Ticket getTicket(String vehicleRegNumber) { 
-        Connection con = null; 
-       Ticket ticket = null;
-     
-        try {
-            con = dataBaseConfig.getConnection();
-            PreparedStatement ps = con.prepareStatement(DBConstants.GET_TICKET); 
-            //ID, PARKING_NUMBER, VEHICLE_REG_NUMBER, PRICE, IN_TIME, OUT_TIME)
-            ps.setString(1,vehicleRegNumber);
-            ResultSet rs = ps.executeQuery();
-            if(rs.next()){
-                ticket = new Ticket();
-                ParkingSpot parkingSpot = new ParkingSpot(rs.getInt(1), ParkingType.valueOf(rs.getString(6)),false);
+                Date inTime = new Date();
+                Ticket ticket = new Ticket();
+                //ID, PARKING_NUMBER, VEHICLE_REG_NUMBER, PRICE, IN_TIME, OUT_TIME) 
+              //  ticket.setId(ticketID); 
                 ticket.setParkingSpot(parkingSpot);
-                ticket.setId(rs.getInt(2)); 
                 ticket.setVehicleRegNumber(vehicleRegNumber);
-                ticket.setPrice(rs.getDouble(3));
-                ticket.setInTime(rs.getTimestamp(4));
-                ticket.setOutTime(rs.getTimestamp(5));
+                ticket.setPrice(0);
+                ticket.setInTime(inTime);
+                ticket.setOutTime(null);
+                ticketDAO.saveTicket(ticket);
+          
+                System.out.println("Pleased to see you again ! You have 5% discount because you're now a recurring user ! Thank you for your fidelity !");            
+                System.out.println("Generated Ticket and saved in DB");
+                System.out.println("Please park your vehicle in spot number:"+parkingSpot.getId());
+                System.out.println("Recorded in-time for vehicle number:"+vehicleRegNumber+" is:"+inTime);
             }
-            dataBaseConfig.closeResultSet(rs);
-            dataBaseConfig.closePreparedStatement(ps); 
-        }catch (Exception ex){
-            logger.error("Error fetching next available slot",ex);
-        }finally {
-            dataBaseConfig.closeConnection(con);
-            return ticket;
+        }catch(Exception e){
+            logger.error("Unable to process incoming vehicle",e);
+        }
+     }
+    
+    private String getVehicleRegNumber() throws Exception {    //change private to public REDO changeToVEHICLE
+        System.out.println("Please type the vehicle registration number and press enter key");
+        return inputReaderUtil.readVehicleRegistrationNumber();
+    }
+
+    public ParkingSpot getNextParkingNumberIfAvailable(){
+        int parkingNumber=0;
+        ParkingSpot parkingSpot = null;
+        try{
+            ParkingType parkingType = getVehicleType();   //changeToVEHICLE
+            parkingNumber = parkingSpotDAO.getNextAvailableSlot(parkingType);
+            if(parkingNumber > 0){
+                parkingSpot = new ParkingSpot(parkingNumber,parkingType, true);
+            }else{
+                throw new Exception("Error fetching parking number from DB. Parking slots might be full");
+            }
+        }catch(IllegalArgumentException ie) {
+            logger.error("Error parsing user input for type of vehicle", ie);
+        }catch(Exception e){
+            logger.error("Error fetching next available parking slot", e);
+        }
+        return parkingSpot; 
+    }
+
+    public ParkingType getVehicleType(){  //changeToVEHICLE
+        System.out.println("Please select vehicle type from menu");
+        System.out.println("1 CAR");
+        System.out.println("2 BIKE");
+        int input = inputReaderUtil.readSelection(); 
+        switch(input){
+            case 1: {
+                return ParkingType.CAR;
+            }
+            case 2: {
+                return ParkingType.BIKE;
+            }
+            default: {
+                System.out.println("Incorrect input provided");
+                throw new IllegalArgumentException("Entered input is invalid");
+            }
+        } 
+    }
+ 
+    public boolean IsRecurringUser (String vehicleRegNumber)
+    		{
+       		return ticketDAO.getNbTicket(vehicleRegNumber) >1 ; 
+    }
+    
+    public void processExitingVehicle() { 
+        try{
+            String vehicleRegNumber = getVehicleRegNumber();   //changeToVEHICLE
+            Ticket ticket = ticketDAO.getTicket(vehicleRegNumber);
+            Date outTime = new Date();
+            ticket.setOutTime(outTime);
+            fareCalculatorService.calculateFare (ticket, IsRecurringUser(ticket.getVehicleRegNumber()));
+       
+            if(ticketDAO.updateTicket(ticket)) {
+                ParkingSpot parkingSpot = ticket.getParkingSpot();
+                parkingSpot.setAvailable(true);
+                parkingSpotDAO.updateParking(parkingSpot);
+                System.out.println("Please pay the parking fare:" + ticket.getPrice());
+                System.out.println("Recorded out-time for vehicle number:" + ticket.getVehicleRegNumber() + " is:" + outTime);
+            }else{
+                System.out.println("Unable to update ticket information. Error occurred");
+            }
+        }catch(Exception e){
+            logger.error("Unable to process exiting vehicle",e);
         }
     }
 
-    public boolean updateTicket(Ticket ticket) {
-        Connection con = null; 
-        try {
-            con = dataBaseConfig.getConnection();
-            PreparedStatement ps = con.prepareStatement(DBConstants.UPDATE_TICKET);
-            ps.setDouble(1, ticket.getPrice());
-            ps.setTimestamp(2, new Timestamp(ticket.getOutTime().getTime()));
-            ps.setInt(3,ticket.getId());
-            ps.execute();
-            return true;
-        }catch (Exception ex){
-            logger.error("Error saving ticket info",ex);
-        }finally {
-            dataBaseConfig.closeConnection(con); 
-        }
-        return false;
-    }
-    
-    public int getNbTicket (String vehicleRegNumber) {
-   	 Connection con = null;
-   	 int nbTickets = 0;
-        try {
-            con = dataBaseConfig.getConnection();
-            PreparedStatement ps = con.prepareStatement(DBConstants.GET_OCCURENCES);
-            ps.setString(1,vehicleRegNumber);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-            	nbTickets++;
-            }
-            dataBaseConfig.closeResultSet(rs);
-            dataBaseConfig.closePreparedStatement(ps);
-        }
-        catch (Exception ex){
-            logger.error("Error : finished occurences ",ex);
-        }finally {
-            dataBaseConfig.closeConnection(con);
-    
-   	return nbTickets;
-        }
-    }
 }
 
