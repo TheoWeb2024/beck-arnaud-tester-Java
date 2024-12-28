@@ -21,31 +21,32 @@ public class TicketDAO {
 
     public boolean saveTicket(Ticket ticket){
         Connection con = null;
-        try {
-            con = dataBaseConfig.getConnection();
+        try { 
+            con = dataBaseConfig.getConnection(); 
             PreparedStatement ps = con.prepareStatement(DBConstants.SAVE_TICKET);
             //ID, PARKING_NUMBER, VEHICLE_REG_NUMBER, PRICE, IN_TIME, OUT_TIME)
-            //ps.setInt(1,ticket.getId());
+           // ps.setInt(1,ticket.getId());
             ps.setInt(1,ticket.getParkingSpot().getId());
             ps.setString(2, ticket.getVehicleRegNumber());
             ps.setDouble(3, ticket.getPrice());
-            ps.setTimestamp(4, new Timestamp(ticket.getInTime().getTime()));
+            ps.setTimestamp(4, new Timestamp(ticket.getInTime().getTime())); 
             ps.setTimestamp(5, (ticket.getOutTime() == null)?null: (new Timestamp(ticket.getOutTime().getTime())) );
             return ps.execute();
-        }catch (Exception ex){
+        }catch (Exception ex){ 
             logger.error("Error fetching next available slot",ex);
-        }finally {
+        }finally { 
             dataBaseConfig.closeConnection(con);
             return false;
         }
     }
 
-    public Ticket getTicket(String vehicleRegNumber) {
-        Connection con = null;
-        Ticket ticket = null;
+    public Ticket getTicket(String vehicleRegNumber) { 
+        Connection con = null; 
+       Ticket ticket = null;
+     
         try {
             con = dataBaseConfig.getConnection();
-            PreparedStatement ps = con.prepareStatement(DBConstants.GET_TICKET);
+            PreparedStatement ps = con.prepareStatement(DBConstants.GET_TICKET); 
             //ID, PARKING_NUMBER, VEHICLE_REG_NUMBER, PRICE, IN_TIME, OUT_TIME)
             ps.setString(1,vehicleRegNumber);
             ResultSet rs = ps.executeQuery();
@@ -53,14 +54,14 @@ public class TicketDAO {
                 ticket = new Ticket();
                 ParkingSpot parkingSpot = new ParkingSpot(rs.getInt(1), ParkingType.valueOf(rs.getString(6)),false);
                 ticket.setParkingSpot(parkingSpot);
-                ticket.setId(rs.getInt(2));
+                ticket.setId(rs.getInt(2)); 
                 ticket.setVehicleRegNumber(vehicleRegNumber);
                 ticket.setPrice(rs.getDouble(3));
                 ticket.setInTime(rs.getTimestamp(4));
                 ticket.setOutTime(rs.getTimestamp(5));
             }
             dataBaseConfig.closeResultSet(rs);
-            dataBaseConfig.closePreparedStatement(ps);
+            dataBaseConfig.closePreparedStatement(ps); 
         }catch (Exception ex){
             logger.error("Error fetching next available slot",ex);
         }finally {
@@ -70,7 +71,7 @@ public class TicketDAO {
     }
 
     public boolean updateTicket(Ticket ticket) {
-        Connection con = null;
+        Connection con = null; 
         try {
             con = dataBaseConfig.getConnection();
             PreparedStatement ps = con.prepareStatement(DBConstants.UPDATE_TICKET);
@@ -82,8 +83,31 @@ public class TicketDAO {
         }catch (Exception ex){
             logger.error("Error saving ticket info",ex);
         }finally {
-            dataBaseConfig.closeConnection(con);
+            dataBaseConfig.closeConnection(con); 
         }
         return false;
+    }
+    
+    public int getNbTicket (String vehicleRegNumber) {
+   	 Connection con = null;
+   	 int nbTickets = 0;
+        try {
+            con = dataBaseConfig.getConnection();
+            PreparedStatement ps = con.prepareStatement(DBConstants.GET_OCCURENCES);
+            ps.setString(1,vehicleRegNumber);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+            	nbTickets++;
+            }
+            dataBaseConfig.closeResultSet(rs);
+            dataBaseConfig.closePreparedStatement(ps);
+        }
+        catch (Exception ex){
+            logger.error("Error : finished occurences ",ex);
+        }finally {
+            dataBaseConfig.closeConnection(con);
+    
+   	return nbTickets;
+        }
     }
 }
