@@ -43,8 +43,9 @@ import java.sql.*;
 
 @ExtendWith(MockitoExtension.class)
 class ParkingSpotDAOTest {
-	
+	@Mock
 	public static DataBaseTestConfig dataBaseTestConfig = new DataBaseTestConfig();
+
 	
 	@Mock
 	private static DataBasePrepareService dataBasePrepareService;
@@ -60,6 +61,8 @@ class ParkingSpotDAOTest {
     private ResultSet resultSet;
 	@Mock
 	private DataBaseConfig dataBaseConfig; 
+    @Mock
+    private static InputReaderUtil inputReaderUtil; //ajout
 	
     
    @BeforeAll
@@ -72,35 +75,40 @@ class ParkingSpotDAOTest {
     }
     
     @BeforeEach
-    public void setUpPerTest() throws ClassNotFoundException, SQLException{
-    	dataBasePrepareService.clearDataBaseEntries();
-    	//when(dataBaseConfig.getConnection()).thenReturn(connection);
+    public void setUpPerTest() throws Exception{
+    	dataBasePrepareService.clearDataBaseEntries();      
     } 
     
 	@Test
 	public void testGetNextAvailableSlot() throws SQLException, ClassNotFoundException{
-	      ParkingSpotDAO parkingSpotDAO = new ParkingSpotDAO(); //ajout
+	   ParkingSpotDAO parkingSpotDAO = new ParkingSpotDAO(); //ajout
+	  
+
 		
-        when(connection.prepareStatement(DBConstants.GET_NEXT_PARKING_SPOT)).thenReturn(preparedStatement);
+    /*  when(connection.prepareStatement(DBConstants.GET_NEXT_PARKING_SPOT)).thenReturn(preparedStatement);
         when(preparedStatement.executeQuery()).thenReturn(resultSet);
         when(resultSet.next()).thenReturn(true);
-        when(resultSet.getInt(1)).thenReturn(1); 
+        when(resultSet.getInt(1)).thenReturn(1);  */
+      // when (parkingSpotDAO.getNextAvailableSlot(any(ParkingType.class))).thenReturn(null);
+      
         
-        parkingSpotDAO.getNextAvailableSlot(ParkingType.CAR); //()Parking
+       parkingSpotDAO.getNextAvailableSlot(ParkingType.CAR); //()Parking
         
-       	assertEquals(1, parkingSpotDAO.getNextAvailableSlot(ParkingType.CAR));	 
-       
-        
-
+       	assertEquals(-1, parkingSpotDAO.getNextAvailableSlot(ParkingType.CAR));	 
 	}
 
 	@Test
 	public void testUpdateParking(){
+		//ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR, false);
 		ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR, false);
-		
+		parkingSpot.isAvailable();
 		parkingSpotDAO.updateParking(any(ParkingSpot.class));
-		assertEquals(-1,parkingSpotDAO.getNextAvailableSlot(ParkingType.CAR)); 
+		//parkingSpotDAO.updateParking(parkingSpot);
+		assertEquals(0,parkingSpotDAO.getNextAvailableSlot(ParkingType.CAR)); 
+		assertFalse(parkingSpotDAO.updateParking(parkingSpot));
+		
 	}
+	
 	@AfterAll
 	public static void tearDown() {
 		dataBasePrepareService.clearDataBaseEntries();

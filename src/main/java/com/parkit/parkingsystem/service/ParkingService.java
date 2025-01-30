@@ -45,12 +45,16 @@ public class ParkingService {
                 ticket.setInTime(inTime);
                 ticket.setOutTime(null);
                 ticketDAO.saveTicket(ticket);
-          
-                System.out.println("Pleased to see you again ! You have 5% discount because you're now a recurring user ! Thank you for your fidelity !");            
+                
+                if(ticketDAO.getNbTicket(vehicleRegNumber) >= 2) {
+              	  System.out.println("Pleased to see you again ! You have 5% discount because you're now a recurring user ! Thank you for your fidelity !"); 
+              }else {
+                          
                 System.out.println("Generated Ticket and saved in DB");
                 System.out.println("Please park your vehicle in spot number:"+parkingSpot.getId());
                 System.out.println("Recorded in-time for vehicle number:"+vehicleRegNumber+" is:"+inTime);
             }
+        }
         }catch(Exception e){
             logger.error("Unable to process incoming vehicle",e);
         }
@@ -63,7 +67,7 @@ public class ParkingService {
 
     public ParkingSpot getNextParkingNumberIfAvailable(){
         int parkingNumber=0;
-        ParkingSpot parkingSpot = null;
+        ParkingSpot parkingSpot = null; 
         try{
             ParkingType parkingType = getVehicleType();   //changeToVEHICLE
             parkingNumber = parkingSpotDAO.getNextAvailableSlot(parkingType);

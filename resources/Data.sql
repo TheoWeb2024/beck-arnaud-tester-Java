@@ -1,5 +1,5 @@
 /* Setting up PROD DB */
-create database prod;
+CREATE DATABASE prod;
 use prod;
 
 create table parking(

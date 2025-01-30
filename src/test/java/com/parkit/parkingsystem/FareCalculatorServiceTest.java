@@ -26,7 +26,7 @@ public class FareCalculatorServiceTest {
     @BeforeEach
     private void setUpPerTest() {
         ticket = new Ticket();
-        ticket.discount();
+        ticket.isDiscount();
     }
 
     @Test

@@ -60,7 +60,7 @@ public class Ticket {
         this.outTime = outTime;
     }
 
-	public boolean discount() {
-		return discount;
+	public boolean isDiscount() {
+		return false;
 	}
 }

@@ -13,7 +13,7 @@ public class FareCalculatorService {
 		calculateFare(ticket,false);
 	}
 
-    public void calculateFare(Ticket ticket, boolean discount){
+    public void calculateFare(Ticket ticket, boolean isDiscount){
         if( (ticket.getOutTime() == null) || (ticket.getOutTime().before(ticket.getInTime())) ){
             throw new IllegalArgumentException("Out time provided is incorrect:"+ticket.getOutTime().toString());
         } 
@@ -41,7 +41,7 @@ public class FareCalculatorService {
             }
             default: throw new IllegalArgumentException("Unkown Parking Type");  
         	}
-        	if(discount) {     // mise en place de la condition de discount = false par défaut
+        	if(isDiscount) {     // mise en place de la condition de discount = false par défaut
             	ticket.setPrice(ticket.getPrice() * 0.95);    // passage de la methode avec 5% de remise
         }	
         	
