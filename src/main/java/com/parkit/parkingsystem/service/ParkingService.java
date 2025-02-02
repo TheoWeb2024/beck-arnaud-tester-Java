@@ -60,7 +60,7 @@ public class ParkingService {
         }
      }
     
-    private String getVehicleRegNumber() throws Exception {    //change private to public REDO changeToVEHICLE
+    private String getVehicleRegNumber() throws Exception {    
         System.out.println("Please type the vehicle registration number and press enter key");
         return inputReaderUtil.readVehicleRegistrationNumber();
     }
@@ -69,7 +69,7 @@ public class ParkingService {
         int parkingNumber=0;
         ParkingSpot parkingSpot = null; 
         try{
-            ParkingType parkingType = getVehicleType();   //changeToVEHICLE
+            ParkingType parkingType = getVehicleType();   
             parkingNumber = parkingSpotDAO.getNextAvailableSlot(parkingType);
             if(parkingNumber > 0){
                 parkingSpot = new ParkingSpot(parkingNumber,parkingType, true);
@@ -79,12 +79,12 @@ public class ParkingService {
         }catch(IllegalArgumentException ie) {
             logger.error("Error parsing user input for type of vehicle", ie);
         }catch(Exception e){
-            logger.error("Error fetching next available parking slot", e);
+            logger.error("Error fetching next available parking slot", e); 
         }
         return parkingSpot; 
     }
 
-    public ParkingType getVehicleType(){  //changeToVEHICLE
+    public ParkingType getVehicleType(){  
         System.out.println("Please select vehicle type from menu");
         System.out.println("1 CAR");
         System.out.println("2 BIKE");
@@ -110,7 +110,7 @@ public class ParkingService {
     
     public void processExitingVehicle() { 
         try{
-            String vehicleRegNumber = getVehicleRegNumber();   //changeToVEHICLE
+            String vehicleRegNumber = getVehicleRegNumber();   
             Ticket ticket = ticketDAO.getTicket(vehicleRegNumber);
             Date outTime = new Date();
             ticket.setOutTime(outTime);

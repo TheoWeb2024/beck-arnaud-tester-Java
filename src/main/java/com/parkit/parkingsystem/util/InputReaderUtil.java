@@ -9,19 +9,28 @@ public class InputReaderUtil {
 
     private static Scanner scan = new Scanner(System.in);
     private static final Logger logger = LogManager.getLogger("InputReaderUtil");
-
+   
     public int readSelection() {
-        try {
-            int input = Integer.parseInt(scan.nextLine());
-            return input;
+    	
+    	 try {
+    		 while(!scan.hasNextInt()) {
+    			 System.out.println("Please enter a number ");
+    			 scan.nextLine();
+    		 }
+    		 int input = Integer.parseInt(scan.nextLine());
+    	  	 return input;
+
         }catch(Exception e){
             logger.error("Error while reading user input from Shell", e);
-            System.out.println("Error reading input. Please enter valid number for proceeding further");
+            System.out.println("Error reading input. Please, ENTER VALID NUMBER for proceeding further");
             return -1;
         }
     }
 
-    public String readVehicleRegistrationNumber() throws Exception {
+    
+
+
+	public String readVehicleRegistrationNumber() throws Exception {
         try {
             String vehicleRegNumber= scan.nextLine();
             if(vehicleRegNumber == null || vehicleRegNumber.trim().length()==0) {

@@ -130,19 +130,19 @@ public class ParkingDataBaseIT {
     @Test
     public void testParkingLotExitRecurringUser() throws Exception{
     	ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
+    	Ticket ticket = new Ticket();
     	 parkingService.processIncomingVehicle();
-    	 Ticket ticket = new Ticket();
     
   
     	 if (ticket != null) {
 	    	ticket.isDiscount();
-	    	 return;
+	    	 //return;
 	     } else{
              System.out.println("Error occurred");
 	     }
     	 
    	  when (ticketDAO.getTicket(anyString())).thenReturn(ticket);
-     	//  parkingService.processExitingVehicle();
+     	  parkingService.processExitingVehicle();
      
 	      
 	      assertFalse(ticket.isDiscount());

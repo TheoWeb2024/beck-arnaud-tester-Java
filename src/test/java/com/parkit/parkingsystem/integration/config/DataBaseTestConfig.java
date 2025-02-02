@@ -9,20 +9,12 @@ import java.sql.*;
 public class DataBaseTestConfig extends DataBaseConfig {
 
     private static final Logger logger = LogManager.getLogger("DataBaseTestConfig");
-    private Connection con = null;
-    public Connection getConnection() throws Exception  {
-  	   logger.info("Create DB connection");
-  	 
-     	try { 
-     
-         Class.forName("com.mysql.cj.jdbc.Driver"); 
-         con = DriverManager
-                 .getConnection("jdbc:mysql://localhost:3306/test","root","");
-                       
-        } catch (Exception e) {
-            throw e;
-        }
-     	return con;
+   
+    public Connection getConnection() throws ClassNotFoundException, SQLException  {
+    	 logger.info("Create DB connection");
+         Class.forName("com.mysql.cj.jdbc.Driver");
+         return DriverManager.getConnection(
+                 "jdbc:mysql://localhost:3306/test","root",""); 
      }
 
     public void closeConnection(Connection con){
