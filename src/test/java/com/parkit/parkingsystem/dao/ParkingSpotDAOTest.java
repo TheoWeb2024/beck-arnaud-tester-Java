@@ -50,7 +50,7 @@ public class ParkingSpotDAOTest {
 		TicketDAO ticketDAO = new TicketDAO();
 		Ticket ticket = ticketDAO.getTicket("I_CAR_1");
 			assertNotNull( ticket);
-			//assertEquals(ticketDAO.getTicket("I_CAR_1"),ticket);
+			assertEquals("I_CAR_1",ticket.getVehicleRegNumber());
 	}
 
 	@Test

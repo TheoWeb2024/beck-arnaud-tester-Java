@@ -119,8 +119,7 @@ public class ParkingServiceTest {
          
          parkingService.getNextParkingNumberIfAvailable();
          
-         verify(parkingSpotDAO, Mockito.times(1)).getNextAvailableSlot(any(ParkingType.class));
-    	  
+         verify(parkingSpotDAO, Mockito.times(1)).getNextAvailableSlot(any(ParkingType.class));  
     } 
  
 	@Test
@@ -133,7 +132,6 @@ public class ParkingServiceTest {
         
         verify(parkingSpotDAO, Mockito.times(1)).getNextAvailableSlot(any(ParkingType.class));
         verify(inputReaderUtil, Mockito.times(1)).readSelection();
-    
     }
 	
     @Test
@@ -150,7 +148,6 @@ public class ParkingServiceTest {
     public void testGetNextParkingNumberIfAvailableForBike()  {
     	
     	when(inputReaderUtil.readSelection()).thenReturn(2);	
-       // when (parkingSpotDAO.updateParking(any(ParkingSpot.class))).thenReturn(true);
         when (parkingSpotDAO.getNextAvailableSlot(any(ParkingType.class))).thenReturn(1);
              
          ParkingType result =  parkingService.getVehicleType();

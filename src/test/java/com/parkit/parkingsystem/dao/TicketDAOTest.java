@@ -137,13 +137,13 @@ public class TicketDAOTest {
 			assertTrue(false);
 		}		
 	}
+	
 	@Test
 	public void test_1_GetTicketCAREmplacement1(){ 
 		TicketDAO ticketDAO = new TicketDAO();
 		Ticket ticket = ticketDAO.getTicket("I_CAR_2");
 		
-	
-			//assertNotNull( ticket);
+			assertNotNull( ticket);
 			assertEquals("I_CAR_2",ticket.getVehicleRegNumber());
 	}		
 			
@@ -152,7 +152,7 @@ public class TicketDAOTest {
 		TicketDAO ticketDAO = new TicketDAO();
 		Ticket ticket = ticketDAO.getTicket("IMMAT_INIT");
 
-		assertEquals("IMMAT_INIT",ticket.getVehicleRegNumber());
+		assertEquals("IMMAT_INIT",ticket.getVehicleRegNumber()); 
 			assertEquals(1, ticket.getId());
 	}		
 	
@@ -165,19 +165,17 @@ public class TicketDAOTest {
 		nouvellesDonneesTicket.setPrice(0);
 		nouvellesDonneesTicket.setOutTime(new Date(System.currentTimeMillis() - (60 * 60 * 1000)));
 		nouvellesDonneesTicket.setId(1);
-		//ticketDAO.saveTicket(nouvellesDonneesTicket);
-		//nouvellesDonneesTicket.setId(nouvellesDonneesTicket.getId());
 		ticketDAO.updateTicket(nouvellesDonneesTicket);
 		
 		boolean isUpdate = ticketDAO.updateTicket(nouvellesDonneesTicket);
 		
-			assertTrue(isUpdate);
+		assertTrue(isUpdate);
 	}		
-	
+
 	@Test
 	public void test_1_GetNbTicketCAREmplacement1(){
 		TicketDAO ticketDAO = new TicketDAO();
 		int ticket = ticketDAO.getNbTicket("I_CAR_1");
 			assertNotNull( ticket);
-		}	
-	}
+	}	
+}

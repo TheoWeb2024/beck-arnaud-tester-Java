@@ -31,7 +31,7 @@ public class ParkingService {
         try{
             ParkingSpot parkingSpot = getNextParkingNumberIfAvailable();
             if(parkingSpot !=null && parkingSpot.getId() > 0){
-                String vehicleRegNumber = getVehicleRegNumber();  //changeToVEHICLE
+                String vehicleRegNumber = getVehicleRegNumber();  
                 parkingSpot.setAvailable(false);
                 parkingSpotDAO.updateParking(parkingSpot);//allot this parking space and mark it's availability as false
 
@@ -44,7 +44,10 @@ public class ParkingService {
                 ticket.setPrice(0);
                 ticket.setInTime(inTime);
                 ticket.setOutTime(null);
-                ticketDAO.saveTicket(ticket);
+                if (!ticketDAO.saveTicket(ticket)) {
+                	parkingSpot.setAvailable(true);
+                    parkingSpotDAO.updateParking(parkingSpot);
+                }
                 
                 if(ticketDAO.getNbTicket(vehicleRegNumber) >= 2) {
               	  System.out.println("Pleased to see you again ! You have 5% discount because you're now a recurring user ! Thank you for your fidelity !"); 

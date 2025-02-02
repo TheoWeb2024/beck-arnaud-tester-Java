@@ -49,17 +49,11 @@ public class ParkingDataBaseIT {
    @Mock
     private static TicketDAO ticketDAO;
     private static DataBasePrepareService dataBasePrepareService;
-    
-    //private Ticket ticket;
-  
 
     @Mock
     private static InputReaderUtil inputReaderUtil;
     
     private Ticket ticket;
- //   private FareCalculatorService fareCalculatorService;
- 
-    
 
     @BeforeAll
     private static void setUp() throws Exception{
@@ -103,8 +97,6 @@ public class ParkingDataBaseIT {
 	    assertEquals(0, ticket.getId());
 	    verify(ticketDAO, Mockito.times(1)).getTicket("ABCDEF");
 	    assertEquals(0, ticket.getPrice());
-
-        //TODO: check that a ticket is actualy saved in DB and Parking table is updated with availability
     }
 
     @Test
@@ -123,8 +115,6 @@ public class ParkingDataBaseIT {
 	      verify(ticketDAO, Mockito.times(1)).getNbTicket("ABCDEF");
 	      verify(ticketDAO, Mockito.times(1)).updateTicket(any(Ticket.class));
 	      assertEquals( Fare.CAR_RATE_PER_HOUR, ticket.getPrice());
- 		 //assertEquals( Fare.BIKE_RATE_PER_HOUR, ticket.getPrice());
-        //TODO: check that the fare generated and out time are populated correctly in the database
     }
 
     @Test
@@ -133,7 +123,6 @@ public class ParkingDataBaseIT {
     	Ticket ticket = new Ticket();
     	 parkingService.processIncomingVehicle();
     
-  
     	 if (ticket != null) {
 	    	ticket.isDiscount();
 	    	 //return;
@@ -146,9 +135,24 @@ public class ParkingDataBaseIT {
      
 	      
 	      assertFalse(ticket.isDiscount());
-	    // assertEquals(Fare.CAR_RATE_PER_HOUR * 0.95, ticket.getPrice());
-    	  }
-    
-     
+    }
+
+    @Test
+    public void testParkingLotExitRecurringUser2() throws Exception{
+    	 ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
+         parkingService.processExitingVehicle();
+         	ticket.setVehicleRegNumber("I_CAR_8");
+           when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("I_CAR_8");
+ 		  when (ticketDAO.getTicket(anyString())).thenReturn(ticket);
+ 		  when (ticketDAO.getNbTicket("I_CAR_8")).thenReturn(2);
+ 	      when(ticketDAO.updateTicket(any(Ticket.class))).thenReturn(false);
+ 	            
+ 	      parkingService.processExitingVehicle();
+ 	        
+ 	      verify(ticketDAO, Mockito.times(1)).getTicket("I_CAR_8");
+ 	      verify(ticketDAO, Mockito.times(1)).getNbTicket("I_CAR_8");
+ 	      verify(ticketDAO, Mockito.times(1)).updateTicket(any(Ticket.class));
+ 	      assertEquals( Fare.CAR_RATE_PER_HOUR * 0.95, ticket.getPrice());
+    }  
 }
 
